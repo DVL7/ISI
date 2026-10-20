@@ -1,8 +1,12 @@
-import pandas as pd 
+from pathlib import Path
+
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-df = pd.read_csv("movies.csv")
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+df = pd.read_csv(DATA_DIR / "movies.csv")
 df["overview"] = df["overview"].fillna("")
 
 # czyszczenie danych
