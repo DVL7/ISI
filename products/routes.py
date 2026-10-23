@@ -1,3 +1,4 @@
+import math
 from flask import Blueprint, jsonify, request
 
 products_bp = Blueprint("products", __name__)
@@ -13,15 +14,24 @@ PRODUCTS = [
 
 @products_bp.route("/api/products")
 def getProducts():
-    max_price = request.args.get("max_price", type=float)
-
-    if (max_price is None):
+    if ("max_price" not in request.args):
         return jsonify(PRODUCTS)
+
+    raw_price = request.args.get("max_price")
+
+    try:
+        max_price = float(raw_price)
+    except ValueError:
+        return jsonify({"error": "max_price must be a number"}), 400
+    
+    if (max_price < 0 or not math.isfinite(max_price)):
+        return jsonify({"error": "max_price out of scope"}), 400
     else:
         filtred = []
         for i in PRODUCTS:
             if (i["cena"] <= max_price):
                 filtred.append(i)
+            
         return jsonify(filtred)
     
 
