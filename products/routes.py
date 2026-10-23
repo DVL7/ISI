@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 products_bp = Blueprint("products", __name__)
 
@@ -13,7 +13,17 @@ PRODUCTS = [
 
 @products_bp.route("/api/products")
 def getProducts():
-    return jsonify(PRODUCTS)
+    max_price = request.args.get("max_price", type=float)
+
+    if (max_price is None):
+        return jsonify(PRODUCTS)
+    else:
+        filtred = []
+        for i in PRODUCTS:
+            if (i["cena"] <= max_price):
+                filtred.append(i)
+        return jsonify(filtred)
+    
 
 @products_bp.route("/api/products/<int:product_id>")
 def getProductId(product_id):
