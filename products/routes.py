@@ -34,10 +34,37 @@ def getProducts():
             
         return jsonify(filtred)
     
-
 @products_bp.route("/api/products/<int:product_id>")
 def getProductId(product_id):
     item = next((p for p in PRODUCTS if p["id"] == product_id), None)
     if item is None:
         return jsonify({"error": "not found"}), 404
     return jsonify(item)
+
+@products_bp.route("/api/products", methods=["POST"])
+def postProduct():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict) or not {"nazwa", "kategoria", "cena", "opis"} <= data.keys():
+        return jsonify({"error": "expected JSON object with nazwa, kategoria, cena, opis"}), 400
+    
+    if "id" in data:
+        return jsonify({"error": "id is assigned by the server"}), 400
+    
+    if any(not isinstance(data[key], str) or not data[key].strip() for key in ("nazwa", "kategoria", "opis")):
+        return jsonify({"error": "text fields must be non-empty strings"}), 400
+    
+    price = data["cena"]
+    
+    if type(price) not in (int, float) or (type(price) is float and not math.isfinite(price)) or price < 0:
+        return jsonify({"error": "cena must be a finite non-negative number"}), 400
+    
+    new_id = max((p["id"] for p in PRODUCTS), default=0) + 1
+
+    product = {key: data[key] for key in ("nazwa", "kategoria", "cena", "opis")}
+
+    product["id"] = new_id
+
+    PRODUCTS.append(product)
+
+    return jsonify(product), 201
