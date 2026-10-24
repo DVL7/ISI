@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Rekomendacje filmów na podstawie opisu">
+	<title>Rekomendacje filmów</title>
+	<style>
+		body { font-family: sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+		form { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+		input { padding: 0.4rem; }
+		#title { flex: 1; min-width: 200px; }
+		#top_n { width: 4rem; }
+		#error { color: #b00020; }
+		#suggestions button { margin: 0 0.25rem; cursor: pointer; }
+		li { margin-bottom: 0.4rem; }
+		.meta { color: #666; font-size: 0.9em; }
+	</style>
+</head>
+<body>
+	<h1>Rekomendacje filmów</h1>
+
+	<form id="form">
+		<input id="title" placeholder="Tytuł, np. Inception" required>
+		<input id="genre" placeholder="Gatunek (opcjonalnie)">
+		<input id="top_n" type="number" min="1" max="10" value="5">
+		<button type="submit">Szukaj</button>
+	</form>
+
+	<p id="error"></p>
+	<p id="suggestions"></p>
+	<ul id="results"></ul>
+
+	<script>
+		const form = document.getElementById("form");
+		const titleInput = document.getElementById("title");
+		const genreInput = document.getElementById("genre");
+		const topNInput = document.getElementById("top_n");
+		const errorEl = document.getElementById("error");
+		const suggestionsEl = document.getElementById("suggestions");
+		const resultsEl = document.getElementById("results");
+
+		form.addEventListener("submit", async (event) => {
+			event.preventDefault();
+
+			errorEl.textContent = "";
+			suggestionsEl.textContent = "";
+			resultsEl.textContent = "";
+
+			const params = new URLSearchParams({ title: titleInput.value, top_n: topNInput.value });
+			if (genreInput.value.trim() !== "") {
+				params.set("genre", genreInput.value);
+			}
+
+			let res, data;
+			try {
+				res = await fetch("/api/recommend?" + params);
+				data = await res.json();
+			} catch (err) {
+				errorEl.textContent = "Brak połączenia z serwerem";
+				return;
+			}
+
+			if (!res.ok) {
+				errorEl.textContent = data.error;
+				showSuggestions(data.suggestions || []);
+				return;
+			}
+
+			if (data.count === 0) {
+				errorEl.textContent = "Brak wyników dla tego gatunku";
+				return;
+			}
+
+			for (const rec of data.recommendations) {
+				const li = document.createElement("li");
+				const name = document.createElement("strong");
+				name.textContent = rec.title;
+				const meta = document.createElement("span");
+				meta.className = "meta";
+				meta.textContent = ` — ${rec.genres}, ocena ${rec.rating}, podobieństwo ${rec.score}`;
+				li.append(name, meta);
+				resultsEl.appendChild(li);
+			}
+		});
+
+		function showSuggestions(suggestions) {
+			if (suggestions.length === 0) return;
+			suggestionsEl.append("Czy chodziło Ci o: ");
+			for (const s of suggestions) {
+				const btn = document.createElement("button");
+				btn.type = "button";
+				btn.textContent = s;
+				btn.addEventListener("click", () => {
+					titleInput.value = s;
+					form.requestSubmit();
+				});
+				suggestionsEl.appendChild(btn);
+			}
+		}
+	</script>
+</body>
+</html>
