@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 
 from products.routes import products_bp
 from recommender.routes import recommender_bp
@@ -11,6 +11,9 @@ app.register_blueprint(recommender_bp)
 def health():
     return jsonify({"status": "ok"})
 
+@app.route("/")
+def index():
+    return send_from_directory(app.root_path, "index.html")
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
