@@ -1,9 +1,9 @@
+import pandas as pd
 from flask import request
 from pathlib import Path
-
-import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from difflib import get_close_matches
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -22,6 +22,11 @@ tfidf_matrix = vectorizer.fit_transform(df["overview"])
 print(tfidf_matrix.shape)  
 
 sim_matrix = cosine_similarity(tfidf_matrix)
+
+def suggestion(title, n=3):
+    titles = {t.lower(): t for t in df["title"]}
+    matches = get_close_matches(title.lower(), titles.keys(), n=n)
+    return [titles[m] for m in matches]
 
 def recommend(title, top_n=5, genre=None):
     match = df[df["title"].str.lower() == title.lower()]

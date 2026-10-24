@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from recommender.recommender import recommend
+from recommender.recommender import recommend, suggestion
 
 recommender_bp = Blueprint("recommender", __name__)
 
@@ -25,13 +25,13 @@ def api_recommend():
         recs = recommend(title, top_n=n)
 
         if recs is None:
-            return jsonify({"error": "nie znam takiego filmu"}), 404
+            return jsonify({"error": "no matches found", "suggestions": suggestion(title)}), 404
         return jsonify({"title": title, "count": len(recs), "recommendations": recs})
 
     recs = recommend(title, top_n=n, genre=genre)
 
     if recs is None:
-        return jsonify({"error": "nie znam takiego filmu"}), 404
+        return jsonify({"error": "no matches found", "suggestions": suggestion(title)}), 404
     return jsonify({"title": title, "count": len(recs), "recommendations": recs})
 
     
