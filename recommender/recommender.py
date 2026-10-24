@@ -1,3 +1,4 @@
+from flask import request
 from pathlib import Path
 
 import pandas as pd
@@ -22,15 +23,23 @@ print(tfidf_matrix.shape)
 
 sim_matrix = cosine_similarity(tfidf_matrix)
 
-def recommend(title, top_n=5):
+def recommend(title, top_n=5, genre=None):
     match = df[df["title"].str.lower() == title.lower()]
     if match.empty:
         return None
     idx = match.index[0]
     scores = sorted(enumerate(sim_matrix[idx]), key=lambda x: x[1], reverse=True)
-    return [
-        {"title": df["title"][i], "genres": df["genres"][i],
-         "rating": round(float(df["rating"][i]), 1),
-         "score": round(float(s), 3)}
-        for i, s in scores if i != idx
-    ][:top_n]
+    if (genre is None):
+        return [
+            {"title": df["title"][i], "genres": df["genres"][i],
+            "rating": round(float(df["rating"][i]), 1),
+            "score": round(float(s), 3)}
+            for i, s in scores if i != idx
+        ][:top_n]
+    else:
+        return [
+            {"title": df["title"][i], "genres": df["genres"][i],
+            "rating": round(float(df["rating"][i]), 1),
+            "score": round(float(s), 3)}
+            for i, s in scores if i != idx and genre.lower() in df["genres"][i].split("|")
+            ][:top_n]
