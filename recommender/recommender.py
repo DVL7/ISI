@@ -4,7 +4,6 @@ from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from difflib import get_close_matches
-from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -49,3 +48,6 @@ def recommend(title, top_n=5, genre=None):
             "score": round(float(s), 3)}
             for i, s in scores if i != idx and genre.lower() in df["genres"][i].split("|")
             ][:top_n]
+
+if __name__ == "__main__": 
+    print(recommend("Ania"))
