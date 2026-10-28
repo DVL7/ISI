@@ -49,3 +49,6 @@ def recommend(title, top_n=5, genre=None):
             "score": round(float(s), 3)}
             for i, s in scores if i != idx and genre.lower() in df["genres"][i].split("|")
             ][:top_n]
+
+if __name__ == "__main__": 
+    print(recommend("Ania"))
