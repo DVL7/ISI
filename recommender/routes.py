@@ -52,3 +52,7 @@ def api_recommend():
     if recs is None:
         return jsonify({"error": "no matches found", "suggestions": suggestion(title)}), 404
     return jsonify({"title": title, "count": len(recs), "recommendations": recs})
+
+@recommender_bp.route("/api/users")
+def api_users():
+    return jsonify({"users": sorted(matrix.index.tolist())}), 200
