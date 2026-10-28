@@ -4,6 +4,7 @@ from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from difflib import get_close_matches
+from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 

@@ -1,11 +1,30 @@
 from flask import Blueprint, jsonify, request
 
 from recommender.recommender import recommend, suggestion
+from recommender.rating import matrix, recommend as recommend_user
 
 recommender_bp = Blueprint("recommender", __name__)
 
 @recommender_bp.route("/api/recommend")
 def api_recommend():
+    if "user" in request.args:
+        user = request.args.get("user", "").strip()
+        if not user:
+            return jsonify({"error": "podaj parametr ?user=..."}), 400
+
+        if "k" in request.args:
+            k = request.args.get("k", type=int)
+        else:
+            k = 3
+
+        if k is None or not 1 <= k <= 11:
+            return jsonify({"error": "k not in range (1..11)"}), 400
+        
+        recs = recommend_user(user, k=k)
+        if recs is None:
+            return jsonify({"error": "nie znam takiego uzytkownika",
+                            "known_users": sorted(matrix.index.tolist())}), 404
+        return jsonify({"user": user, "count": len(recs), "recommendations": recs})
 
     title = request.args.get("title", "").strip()
     if not title:
@@ -34,4 +53,6 @@ def api_recommend():
         return jsonify({"error": "no matches found", "suggestions": suggestion(title)}), 404
     return jsonify({"title": title, "count": len(recs), "recommendations": recs})
 
-    
+@recommender_bp.route("/api/users")
+def api_users():
+    return jsonify({"users": sorted(matrix.index.tolist())}), 200
